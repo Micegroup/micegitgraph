@@ -1,201 +1,202 @@
 
-//IMPORTANTE
-//controllare sempre la versione delle api, nel caso cambiarla in "urlProject"
+//IMPORTANT
+//check always Api version
 
-var username;
-var password;
-var branches = new Array(); //memorizzazione branches
-var private_token;
-var urlProject
-var urlGetProject;
+var gitgraph;
+var branches = new Array(); //save branches 
+var nameProject;
+var urlApi;
+var login; // variable to create url with or without token
+var headers;//for ajax call
 
-function createGitgraph(baseUrl, nomeProgetto, versione, _username, _password) {
 
-	urlProject = baseUrl + "/api/" + versione;
-	var idProject;
-	username = _username;
-	password = _password
+//function to create gitgraph base and to call Api for save token if there are username and password
+function createGitgraph(baseUrl, version, username, password) {
 
+	// splite url for api
+	var n = baseUrl.lastIndexOf('/');
+	var nameProject2 = baseUrl.substring(n + 1);
+	baseUrl = baseUrl.substring(0, n)
+	var indexPoint = nameProject2.indexOf(".");
+	nameProject2 = nameProject2.substring(0, indexPoint)
+	var m = baseUrl.lastIndexOf('/')
+	var nameProject1 = baseUrl.substring(m + 1);
+	baseUrl = baseUrl.substring(0, m)
+	nameProject = nameProject1 + "%2F" + nameProject2
+	urlApi = baseUrl + "/api/" + version;
 
 	console.log("INIT CREATE GITGRAPH")
 
+	//custom gitGraph template
+	var graphConfig = new GitGraph.Template({
+		branch: {
+			color: "#000000",
+			lineWidth: 3,
+			spacingX: 60,
+			mergeStyle: "straight",
+			showLabel: true,                // display branch names on graph
+			labelFont: "normal 10pt Arial",
+			labelRotation: 0
+		},
+		commit: {
+			spacingY: -30,
+			dot: {
+				size: 8,
+				strokeColor: "#000000",
+				strokeWidth: 4
+			},
+			tag: {
+				font: "normal 10pt Arial",
+				color: "yellow"
+			},
+			message: {
+				color: "black",
+				font: "normal 12pt Arial",
+				displayAuthor: false,
+				displayBranch: false,
+				displayHash: false,
+			}
+		},
+		arrow: {
+			size: 8,
+			offset: 3
+		}
+	});
+
+	var config = {
+		template: graphConfig,
+		mode: "extended",
+		orientation: "horizontal"
+	};
+
+	var bugfixCommit = {
+		messageAuthorDisplay: false,
+		messageBranchDisplay: false,
+		messageHashDisplay: false,
+		message: "Bug fix commit(s)"
+	};
+
+	var stablizationCommit = {
+		messageAuthorDisplay: false,
+		messageBranchDisplay: false,
+		messageHashDisplay: false,
+		message: "Release stablization commit(s)"
+	};
+	gitgraph = new GitGraph(config);
+
+
+	//save token by api
 	if (username != undefined && password != undefined) {
+		login = true;
 		console.log("AJAX GET TOKEN....")
-		$.ajax({ // chiamata POST per ricevere il token
+		$.ajax({
 			type: "POST",
-			url: urlProject + "/session?login=" + username + "&password=" + password,
+			url: baseUrl + "/oauth/token",
+			data: {
+				"grant_type": "password",
+				"username": username,
+				"password": password
+			},
 			success: function (data) {
-				//salvo il token per le chiamate future
-				private_token = data.private_token;
-				urlGetProject = urlProject + "/projects?search=" + nomeProgetto + "&private_token=" + private_token;
+				headers = { 'Authorization': 'Bearer ' + data.access_token }
 				main();
 
-			} // END chiamata per il token
+			}
 		});
 
-	} // end if username e password ok
+	}
 	else {
-		urlGetProject = urlProject + "/projects?search=" + nomeProgetto;
+		login = false;
+		headers = null
 		main();
 	}
 
 } // END function createGitgraph
 
 
-
+//function that calls API gitLab and create dynamically node of graph
 function main() {
-	$.ajax({ // ricevo le informazione del progetto
-		url: urlGetProject,
+
+	//creazione degli url che verranno poi utilizzati nelle chiamate ajax API
+	//url for api calls
+	if (login == true) {
+		var urlGetBranches = urlApi + "/projects/" + nameProject + "/repository/branches";
+		//per_page	Number of items to list for page (default: 20, max: 100)
+		//the request is filtered by "merged", in order to return only the merge requests in that state
+		var urlGetMergeRequest = urlApi + "/projects/" + nameProject + "/merge_requests?state=merged&per_page=100";
+	}
+	else {
+		var urlGetBranches = urlApi + "/projects/" + nameProject + "/repository/branches";
+		//per_page		Number of items to list for page (default: 20, max: 100)
+		var urlGetMergeRequest = urlApi + "/projects/" + nameProject + "/merge_requests?state=merged&per_page=100";
+	}
+
+
+
+	branches.push(gitgraph.branch("master")); //branche master in branches[0]
+	branches.find(x => x.name == "master").commit({
+		author: "dario.telese@micegroup.it",
+		column: 0,          // index of row to show this branches 
+		message : "init Master",
+		onClick: function (commit) {
+			alert("Title: init Master\n" +
+				"Author : " + commit.author + "\n" +
+				"Date: " + commit.date);
+		}
+	});
+
+	console.log("GET BRANCHES....")
+	$.ajax({ //request api for BRANCHES
+		url: urlGetBranches,
+		headers: headers,
 		success: function (data) {
-			idProject = data[0].id;
+			data.forEach(element => {
+				if (element.name == "master") {
+					return null;
+				}
+				else {
+					branches.push(branches[0].branch(element.name)); //create and insert branches in array
+					branches.find(x => x.name == element.name).commit({  //first commit of branche
+						message: "init " + element.name,
+						sha: element.id,
+						onClick: function (commit) {
+							console.log("Oh, you clicked my commit?!", commit);
+							alert("Title: init " + element.name + "\n" +
+								"Message: " + element.commit.message + "\n" +
+								"Author : " + element.commit.author_email + "\n" +
+								"Date: " + element.commit.committed_date);
+						}
 
-			if (username != undefined && password != undefined) {
-				var urlGetBranches = urlProject + "/projects/" + idProject + "/repository/branches?private_token=" + private_token;
-
-				//per_page	Numero di elementi da elencare per pagina (default: 20, max: 100)
-				var urlGetMergeRequest = urlProject + "/projects/" + idProject + "/merge_requests?state=merged&per_page=21&private_token=" + private_token;
-			}
-			else {
-				var urlGetBranches = urlProject + "/projects/" + idProject + "/repository/branches";
-
-				//per_page	Numero di elementi da elencare per pagina (default: 20, max: 100)
-				var urlGetMergeRequest = urlProject + "/projects/" + idProject + "/merge_requests?state=merged&per_page=100";
-			}
-			var graphConfig = new GitGraph.Template({
-				branch: {
-					color: "#000000",
-					lineWidth: 3,
-					spacingX: 60,
-					mergeStyle: "straight",
-					showLabel: true,                // display branch names on graph
-					labelFont: "normal 10pt Arial",
-					labelRotation: 0
-				},
-				commit: {
-					spacingY: -30,
-					dot: {
-						size: 8,
-						strokeColor: "#000000",
-						strokeWidth: 4
-					},
-					tag: {
-						font: "normal 10pt Arial",
-						color: "yellow"
-					},
-					message: {
-						color: "black",
-						font: "normal 12pt Arial",
-						displayAuthor: false,
-						displayBranch: false,
-						displayHash: false,
-					}
-				},
-				arrow: {
-					size: 8,
-					offset: 3
+					})
 				}
 			});
 
-			var config = {
-				template: graphConfig,
-				mode: "extended",
-				orientation: "horizontal"
-			};
-
-			var bugfixCommit = {
-				messageAuthorDisplay: false,
-				messageBranchDisplay: false,
-				messageHashDisplay: false,
-				message: "Bug fix commit(s)"
-			};
-
-			var stablizationCommit = {
-				messageAuthorDisplay: false,
-				messageBranchDisplay: false,
-				messageHashDisplay: false,
-				message: "Release stablization commit(s)"
-			};
-
-
-			var gitgraph = new GitGraph(config);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-			branches.push(gitgraph.branch("master")); //creo la branche e la inserisco nell'array
-			branches.find(x => x.name == "master").commit({
-				author: "dario.telese@micegroup.it", //oggetto contenente i dati dell'autore
-				column: 0,          // indice della riga su cui visualizzare questa branches
-				onClick: function (commit) {
-					console.log("Oh, you clicked my commit?!", commit);
-				}
-			});
-
-			console.log("GET BRANCHES....")
-			$.ajax({ //chiamata per gli BRANCHES
-				url: urlGetBranches,
+			console.log("GET MERGE REQUEST...")
+			$.ajax({ //request api for MERGE REQUEST
+				url: urlGetMergeRequest,
+				headers: headers,
 				success: function (data) {
-					console.log("in BRANCHES....")
+
+					data = data.reverse(); //to create the graph in order from left to right (from the oldest to the new)
 					data.forEach(element => {
-						if (element.name == "master") {
-							return null;
-						}
-						else {
-							branches.push(branches[0].branch(element.name));
-							branches.find(x => x.name == element.name).commit()
-						}
-					});
-
-					console.log("GET MERGE REQUEST...")
-
-
-
-					$.ajax({
-						url: urlGetMergeRequest,
-						success: function (data) {
-
-							data = data.reverse(); //riordiniamo per creare il grafico in ordine da sinistra a destra(dal più vecchio al nuovo)
-							console.log(data)
-							data.forEach(element => {
-								var source = branches.find(x => x.name == element.source_branch);
-								var target = branches.find(x => x.name == element.target_branch);
-
-								if (source != undefined && target != undefined) {
-
-									source.merge(target, {										
-										author: element.author.username,
-										onClick: function (commit) {
-											console.log("Oh, you clicked my commit?!", commit);
-											alert("Title: " + element.title + "\n" +
-												"Message: " + commit.message + "\n" +
-												"Author : " + commit.author + "\n" +
-												"Date: " + commit.date);
-										}
-									})
+						var source = branches.find(x => x.name == element.source_branch);
+						var target = branches.find(x => x.name == element.target_branch);
+						if (source != undefined && target != undefined) { //if branche exists, it's possible to do merge
+							source.merge(target, {
+								author: element.author.username,
+								onClick: function (commit) {
+									console.log("Oh, you clicked my commit?!", commit);
+									alert("Title: " + element.title + "\n" +
+										"Message: " + commit.message + "\n" +
+										"Author : " + commit.author + "\n" +
+										"Date: " + commit.date);
 								}
-							}) //end forEach
-						} //end success
-					}) //end chiamata ajax merge request
-				}//end success chiamata per le branches				
-			}); // chiamata ajax per gli BRANCHES
-		}//END success chiamata per le informazioni del progetto
-	}); // END ajax chiamata per le informazioni del progetto
-
-
-
-} // main
-
+							})
+						}
+					}) //end forEach
+					console.log("END!!")
+				} //end success
+			}) //end call ajax merge request
+		}//end success call BRANCES				
+	}); // chiamata ajax per gli BRANCHES
+}//END function main
