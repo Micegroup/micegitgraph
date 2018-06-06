@@ -17,12 +17,16 @@ Utlizzare la funzione:
 - public projects 
     ```
      createGitgraph(url,version)
+
+    - parameters:
+        - url: base url of project gitLab
+        - version: v3 or v4 
     ```
+
 - private projects 
     ```
      createGitgraph(url,version,username,password)
     ```
-
 
 
 
