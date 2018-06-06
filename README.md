@@ -27,7 +27,9 @@ Utlizzare la funzione:
     ```
      createGitgraph(url,version,username,password)
     ```
-
+    - parameters:
+        - url: base url of project gitLab
+        - version: v3 or v4 
 
 
 
