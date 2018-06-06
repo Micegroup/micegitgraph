@@ -7,13 +7,13 @@ Ogni nodo dell'albero rappresenta un merge tra branches del progetto in question
 
 ## How to use
 
-Inserisci nel codice HTML
+Insert to HTLM code
 
 ```
 <canvas id="gitGraph"></canvas>
 ```
 
-Utlizzare la funzione:
+Use function:
 - public projects 
     ```
      createGitgraph(url,version)
@@ -27,8 +27,8 @@ Utlizzare la funzione:
     ```
     - **url**: base url of project gitLab
     - **version**: v3 or v4 
-    - **username**: username gitLab
-    - **password**: password gitLab
+    - **username**: gitLab's username 
+    - **password**: gitLab's password 
     
 
 
