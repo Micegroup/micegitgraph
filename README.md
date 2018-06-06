@@ -30,14 +30,11 @@ Use function:
     - **username**: gitLab's username 
     - **password**: gitLab's password 
     
-
-
-
-
-
+    
+Example:
 
 ```
-Example:
+<canvas id="gitGraph"></canvas>
 
 <button onclick="createGitgraph('https://example.com/example1/testExample.git', 'v3')">DRAW</button>
 
