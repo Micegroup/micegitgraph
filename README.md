@@ -18,14 +18,14 @@ Utlizzare la funzione:
     ```
      createGitgraph('https://example.com/example1/testExample.git','version')
     ```
-    - private projects 
+- private projects 
     ```
      createGitgraph('https://example.com/example1/testExample.git','version','username','password')
     ```
 
 
 ```
-Esempio:
+Example:
 
 <button onclick="createGitgraph('https://gitlab.com/dariotelese/testGraph.git', 'v3')">DRAW</button>
 
