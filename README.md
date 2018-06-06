@@ -26,7 +26,7 @@ Use function:
      createGitgraph(url,version,username,password)
     ```
     - **url**: base url of project gitLab
-    - **version**: version of gitLab's project v3 or v4 
+    - **version**: version of gitLab's project (v3 or v4) 
     - **username**: gitLab's username 
     - **password**: gitLab's password 
     
