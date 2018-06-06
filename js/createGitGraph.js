@@ -5,25 +5,25 @@
 var gitgraph;
 var branches = new Array(); //save branches 
 var nameProject;
-var urlApi;
+var urlBase;
 var login; // variable to create url with or without token
 var headers;//for ajax call
 
 
 //function to create gitgraph base and to call Api for save token if there are username and password
-function createGitgraph(baseUrl, version, username, password) {
+function createGitgraph(url, version, username, password) {
+
+	console.log(url)
+
 
 	// splite url for api
-	var n = baseUrl.lastIndexOf('/');
-	var nameProject2 = baseUrl.substring(n + 1);
-	baseUrl = baseUrl.substring(0, n)
-	var indexPoint = nameProject2.indexOf(".");
-	nameProject2 = nameProject2.substring(0, indexPoint)
-	var m = baseUrl.lastIndexOf('/')
-	var nameProject1 = baseUrl.substring(m + 1);
-	baseUrl = baseUrl.substring(0, m)
-	nameProject = nameProject1 + "%2F" + nameProject2
-	urlApi = baseUrl + "/api/" + version;
+	var n = url.indexOf("/",9)
+	urlBase = url.substring(0,n);
+	nameProject = url.substring(n+1,url.lenght)
+	nameProject = nameProject.replace(/\//g,"%2F");
+	nameProject = nameProject.replace(".git",'')
+
+	urlApi = urlBase + "/api/" + version;
 
 	console.log("INIT CREATE GITGRAPH")
 
@@ -91,7 +91,7 @@ function createGitgraph(baseUrl, version, username, password) {
 		console.log("AJAX GET TOKEN....")
 		$.ajax({
 			type: "POST",
-			url: baseUrl + "/oauth/token",
+			url: urlBase + "/oauth/token",
 			data: {
 				"grant_type": "password",
 				"username": username,
@@ -121,14 +121,18 @@ function main() {
 	//url for api calls
 	if (login == true) {
 		var urlGetBranches = urlApi + "/projects/" + nameProject + "/repository/branches";
+		console.log("urlGetBranches: "+urlGetBranches)
 		//per_page	Number of items to list for page (default: 20, max: 100)
 		//the request is filtered by "merged", in order to return only the merge requests in that state
 		var urlGetMergeRequest = urlApi + "/projects/" + nameProject + "/merge_requests?state=merged&per_page=100";
+		console.log("urlGetMergeRequest: "+urlGetMergeRequest)
 	}
 	else {
 		var urlGetBranches = urlApi + "/projects/" + nameProject + "/repository/branches";
+		console.log("urlGetBranches: "+urlGetBranches)
 		//per_page		Number of items to list for page (default: 20, max: 100)
 		var urlGetMergeRequest = urlApi + "/projects/" + nameProject + "/merge_requests?state=merged&per_page=100";
+		console.log("urlGetMergeRequest: "+urlGetMergeRequest)
 	}
 
 
