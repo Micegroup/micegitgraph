@@ -13,8 +13,8 @@ Inserisci nel codice HTML
 <canvas id="gitGraph"></canvas>
 ```
 
-utlizzare la funzione:
-    - public projects 
+Utlizzare la funzione:
+- public projects 
     ```
      createGitgraph('https://example.com/example1/testExample.git','version')
     ```
