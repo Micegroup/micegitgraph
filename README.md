@@ -16,18 +16,24 @@ Inserisci nel codice HTML
 Utlizzare la funzione:
 - public projects 
     ```
-     createGitgraph('https://example.com/example1/testExample.git','version')
+     createGitgraph(url,version)
     ```
 - private projects 
     ```
-     createGitgraph('https://example.com/example1/testExample.git','version','username','password')
+     createGitgraph(url,version,username,password)
     ```
+
+
+
+
+
+
 
 
 ```
 Example:
 
-<button onclick="createGitgraph('https://gitlab.com/dariotelese/testGraph.git', 'v3')">DRAW</button>
+<button onclick="createGitgraph('https://example.com/example1/testExample.git', 'v3')">DRAW</button>
 
 ```
 
