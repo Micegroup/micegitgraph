@@ -27,6 +27,8 @@ Utlizzare la funzione:
     ```
     - **url**: base url of project gitLab
     - **version**: v3 or v4 
+    - **username**: username gitLab
+    - **password**: password gitLab
     
 
 
