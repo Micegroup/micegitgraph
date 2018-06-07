@@ -1,19 +1,19 @@
 # Mice Git Graph Drawer
 
 Mice Git Graph is an open source js library to draw useful git tree.
-Ogni nodo dell'albero rappresenta un merge tra branches del progetto in questione.
+Ogni nodo dell'albero rappresenta una merge request, nello stato "merged", tra branches del progetto in questione.
 
 ![alt text](example.png)
 
 ## How to use
 
-Insert to HTLM code
+Insert into HTLM code
 
 ```
 <canvas id="gitGraph"></canvas>
 ```
 
-Use function:
+Use this function into HTML code:
 - public projects 
     ```
      createGitgraph(url,version)
