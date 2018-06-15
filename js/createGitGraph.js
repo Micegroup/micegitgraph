@@ -110,7 +110,6 @@ function createGitGraph(url, version, username, password, newFunction) {
 			success: function (data) {
 				headers = { 'Authorization': 'Bearer ' + data.access_token }
 				main();
-
 			}
 		});
 	}
